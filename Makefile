@@ -12,6 +12,9 @@ build: presentation.tex
 test:  build
 	okular build/presentation.pdf
 
+clean:
+	rm -rf build
+
 
 # vim:ft=make
 #

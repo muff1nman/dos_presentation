@@ -2,6 +2,20 @@
 %
 \documentclass{beamer}
 \usepackage{graphicx}
+\usepackage{listings}
+\usepackage{verbatim}
+
+\let\oldfootnotesize\footnotesize
+%\renewcommand*{\footnotesize}{\oldfootnotesize\tiny}
+
+\lstset{
+	basicstyle=\oldfootnotesize\ttfamily,
+	escapeinside={\%*}{*)}
+}
+
+\setbeamertemplate{footline}[]{}
+\setbeamertemplate{navigation symbols}{}
+
 
 \title{
 	Denial of Service Attacks
@@ -33,7 +47,7 @@
 	\end{columns}
 \end{frame}
 
-\begin{frame}{Agenda}
+\begin{frame}[allowframebreaks]{Agenda}
 	\begin{itemize}
 		\item Background
 			\begin{itemize}
@@ -46,25 +60,259 @@
 				\item Purpose
 				\item The people behind these attacks
 				\item Events in the news
-				\item Short History ?
+				\item Short History ? % TODO
+			\end{itemize}
+		\item Tools used?
+			\begin{itemize}
+				\item Wireshark
+				\item scapy
+				\item dig
+				\item Other built in Linux tools %TODO remove
 			\end{itemize}
 		\item Layer 2 Attacks
 			\begin{itemize}
-				\item :(
+				\item :( %TODO
 			\end{itemize}
-		\item Layer 3 Attacks
+			%TODO check layers
+		\item Layer 3 Attacks 
 			\begin{itemize}
 				\item{SYN Food}
 				\item{DNS Reflection}
 			\end{itemize}
 		\item Application Layer Attacks
 			\begin{itemize}
-				\item :(
+				\item :( % TODO
 			\end{itemize}
 		\item Prevention
 	\end{itemize}
 \end{frame}
 
+\begin{frame}{SYN Flood}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{SYN Flood... Background}
+	\begin{itemize}
+		\item TCP, or Transmission Control Protocol is a Layer 2 protocol underlying
+			most internet communications today.  It uses a 3 step handshake to
+			establish a connection
+			\begin{enumerate}
+				\item Client will send a $SYN$ to a listening server.  The sequence
+					number($seq\_num$) is set to a random number.
+				\item Server responds with $SYN$-$ACK$, with the acknowledgement number
+					($ack\_num$) set to 1 plus the $seq\_num$.  It sets a new random value
+					for $seq\_num$
+				\item Client responds with an $ACK$.
+					\begin{itemize}
+						\item $ack\_num = 1 + seq\_num$
+						\item $seq\_num = 1 + ack\_num$
+					\end{itemize}
+			\end{enumerate}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{SYN Flood... Theory}
+	\begin{itemize}
+		\item The TCP handshake process requires the server to save
+			state before the connection can be established
+			\begin{itemize}
+				\item Sequence and Acknowledgement numbers need to be saved
+				\item State is saved in a Transmission Control Block (TCB)
+			\end{itemize}
+		\item There is a limited amount of room that the operating system saves for
+			TCBs 
+	\end{itemize}
+	\begin{enumerate}
+		\item The attacker sends a $SYN$ packet
+		\item The victim sends back a $SYN$-$ACK$
+			% The attacker may also spoof the ip address so that his machine does not
+			% respond and close the connection
+		\item The attacker sends... {\em nothing}
+		\item This leaves a half open TCP connection on the server, consuming
+			resources
+			\begin{itemize}
+				\item TCP connections are only flushed out after a period of time, or in
+					some implementations, when the TCP pool is depleted
+			\end{itemize}
+		\item With so many open connections on the server, new legitimate traffic
+			cannot get through
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}
+	\frametitle{SYN Flood... Demo}
+\end{frame}
+
+\begin{frame}
+	\frametitle{SYN Flood... Mitigations}
+
+\end{frame}
+
+\begin{frame}{DNS Reflection Attacks}
+
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]
+	\frametitle{DNS Reflection Attacks... Background}
+	\begin{itemize}
+		\item DNS (Domain Name System) provides a mapping of names to IP addresses
+			%That way we can keep down on the number of mysql ip addresses we have to
+			%memorize :)
+			\begin{verbatim}www.google.com -> 74.125.227.112\end{verbatim}
+		\item Hierarchal structure with authoritative nodes
+			%\begin{verbatim}
+									 %.
+							%edu        com           ...
+				%mines      google   credera
+			%\end{verbatim}
+		\item Nodes can have several different types of records
+			%for which they are authoritative
+			\begin{itemize}
+				\item \begin{verbatim}A\end{verbatim} % The typical ip record
+				\item \begin{verbatim}CNAME\end{verbatim} 
+					% For any aliases that also map to the A record.
+				\item \begin{verbatim}AAAA\end{verbatim} 
+					% ip 6
+				\item \begin{verbatim}TXT...\end{verbatim}
+			\end{itemize}
+		\item Clients / Resolvers interact with DNS servers with Queries
+			%Example dig output TODO explain what dig does /show some dig stuff
+			\begin{lstlisting}
+			;; QUESTION SECTION:
+			;www.google.com.			IN	A
+
+			;; ANSWER SECTION:
+			www.google.com.		144	IN	A	74.125.227.208
+			\end{lstlisting}
+		\item Authoritative responses are from the original DNS
+		\item Caching may be employed at which point the authoritative bit will not
+			be set.
+			\begin{itemize}
+				\item DNS caches are usually set up by the ISP
+					%This reduces a lot of stress so that each person does not have to do a
+					%iterative lookup
+			\end{itemize}
+		\item Queries use UDP %\em{important}
+			%Important for the response aspect of the DNS reflection attack... fire and
+			%forget
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DNS Reflection Attacks... Theory}
+	The behind a DNS reflection attack is to make {\Large large} DNS requests on
+	behalf of your victim. 
+	\begin{enumerate}
+		\item The attacker sends queries, spoofing the victim's IP.  
+			\begin{itemize}
+				\item Remember.. this is UDP. 
+			\end{itemize}
+			% As compared to TCP where a handshake would be involved
+		\item DNS server responses are sent to the victim
+		\item Attack generates so much traffic that the hardware can't even keep up
+			%10 Gpbs up is saturated by a 11 Gpbs down
+	\end{enumerate}
+	However... None of this is possible without open DNS resolvers...
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]
+	\frametitle{DNS Reflection Attacks... Theory... Open Resolvers}
+	Open Resolvers are misconfigured DNS servers that will respond to recursive
+	requests for domains they are not authoritative for.
+	\begin{itemize}
+		\item Remember that to be authoritative, the domain must be in that DNS
+			server's zone
+		\item  It is okay for DNS servers to be recursive.  The caching servers setup by
+			your ISP are recursive... but only for requests coming from their zone. 
+		\item The problem lies when anyone can make a query to an [open] resolver
+	\end{itemize}
+	\framebreak
+%\end{frame}
+%\begin{frame}[fragile]
+	%\frametitle{DNS Reflection Attacks... Theory... Open Resolvers}
+	% DO IN DEMO?
+	An example of a properly configured domain server
+	\begin{lstlisting}[breaklines]
+	; <<>> DiG 9.8.1-P1 <<>> @216.239.32.10 andrewdemaria.com
+	; (1 server found)
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 57548
+	;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+	;; WARNING: recursion requested but not available
+
+	;; QUESTION SECTION:
+	;andrewdemaria.com.		IN	A
+	\end{lstlisting}
+	\framebreak
+%\end{frame}
+%\begin{frame}[fragile]
+	%\frametitle{DNS Reflection Attacks... Theory... Open Resolvers}
+	An example of a open resolver (very misconfigured)
+	\begin{lstlisting}[breaklines]
+	; <<>> DiG 9.8.1-P1 <<>> @213.128.1.147 google.com +time=3
+	; (1 server found)
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 27001
+	;; flags: qr rd ra; QUERY: 1, ANSWER: 11, AUTHORITY: 4, ADDITIONAL: 4
+
+	;; QUESTION SECTION:
+	;google.com.			IN	A
+
+	;; ANSWER SECTION:
+	google.com.		112	IN	A	173.194.113.192
+	\end{lstlisting}
+	\framebreak
+	There are a little over 28 {\em million} open resolvers operating
+	today\footnote{ As reported by http://openresolverproject.org/breakdown.cgi on
+	2013-08-11}
+	\begin{itemize}
+		\item It is pretty trivial for attackers to find them
+		\item Most businesses / organizations don't even realize that they are
+			contributing to the demise of the internet
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DNS Reflection Attacks... Increasing the effectiveness}
+	\begin{itemize}
+		\item Botnets allow for additional throughput on the attackers size,
+			linearly scaling the attack
+		\item Extensions to DNS allow for increase response size
+			\begin{itemize}
+				\item EDNS 0 allows for DNS packets to go beyond the initial 512 byte
+					limit up to 4096 bytes
+				\item DNSSEC adds fields for keys and signatures for validating DNS
+					records
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{DNS Reflection Attacks... Demo}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DNS Reflection Attacks... In the news}
+\end{frame}
+
+\begin{frame}
+	\frametitle{DNS Reflection Attacks... Mitigation}
+	\begin{itemize}
+		\item Shutdown all the open resolvers
+			\pause
+		\item realistically...
+			\pause
+			Get yourself a good ISP 
+			\pause
+		\item Third party companies such as Cloudflare specialize in hosting customers
+			content and thwarting DNS Reflection attacks
+	\end{itemize}
+\end{frame}
 
 \end{document}
 
