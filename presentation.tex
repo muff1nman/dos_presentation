@@ -143,11 +143,27 @@
 
 \begin{frame}
 	\frametitle{SYN Flood... Demo}
+	%- start up webserver on work laptop
+	%- fireup scapy to show a single packet creation
+	%- watch the result in wireshark
 \end{frame}
 
 \begin{frame}
 	\frametitle{SYN Flood... Mitigations}
-
+	% TODO
+	\begin{itemize}
+		\item Firewall / Proxy
+			\begin{itemize}
+				\item Lets an external system do all the tcp connection management and
+					forwards completed connections along
+			\end{itemize}
+		\item SYN Caching
+		\item SYN Cookies
+			\begin{itemize}
+				\item Lazily creates TCBs so that half open connections don't require
+					resources
+			\end{itemize}
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{DNS Reflection Attacks}
@@ -302,6 +318,7 @@
 
 \begin{frame}
 	\frametitle{DNS Reflection Attacks... Mitigation}
+	% TODO
 	\begin{itemize}
 		\item Shutdown all the open resolvers
 			\pause
@@ -314,5 +331,34 @@
 	\end{itemize}
 \end{frame}
 
+\begin{frame}
+	\frametitle{r-u-dead-yet?}
+\end{frame}
+
+\begin{frame}
+	\frametitle{r-u-dead-yet?}
+	\begin{itemize}
+		\item RUDY (r-u-dead-yet?) is a low-volume DOS attack that utilizes HTTP
+			POST forms on a webservice
+		\item Instead of sending full packets for the POST data, it sends the data a
+			byte at a time, with long time intervals between data segments
+		\item The webserver's connection pool becomes used up as all the threads are
+			waiting on incoming POST data
+		% \item  unique in that all packets are legal and has a very low volume TODO
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{r-u-dead-yet?}
+	\begin{itemize}
+		\item Apache was vulnerable to this attack up to version 2.2 
+			\begin{itemize}
+				\item Apache would keep connections open for 300 seconds (5 min)!
+			\end{itemize}
+		\item Now most webservers allow users to specify a value for
+			{\ttfamily ReadRequestTimeout} to ensure a quicker turn around time for
+			threads  (30 seconds for Apache)
+	\end{itemize}
+\end{frame}
 \end{document}
 
