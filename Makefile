@@ -9,7 +9,7 @@ build: presentation.tex
 	mkdir -p build
 	pdflatex  -output-directory=build presentation.tex
 
-test:  build
+pres:  build
 	okular build/presentation.pdf
 
 clean:

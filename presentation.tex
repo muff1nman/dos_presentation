@@ -7,7 +7,6 @@
 \usepackage{tikz}
 
 \let\oldfootnotesize\footnotesize
-%\renewcommand*{\footnotesize}{\oldfootnotesize\tiny}
 
 \lstset{
 	basicstyle=\oldfootnotesize\ttfamily,
@@ -31,26 +30,6 @@
 
 \begin{document}
 \maketitle
-\begin{frame}{Introduction}
-	\begin{columns}
-		\begin{column}{0.3\textwidth}
-			\includegraphics[width=1\textwidth]{images/andrew.JPG}
-		\end{column}
-		\begin{column}{0.7\textwidth} % TODO clean up
-			Andrew DeMaria is a senior at Colorado School of Mines in Golden, Colorado
-			studying Computer Science. He spent 3 years teaching Cub Scouts at Peaceful
-			Valley Ranch as a lifeguard. Afterwards, he was an intern for Lockheed Martin
-			under their classified Military Support Program (MSP) where he worked on
-			implementing a full Kerberos and LDAP based Authentication and Authorization
-			system. There began his interest in information security and he has continued
-			diving into the topic since.
-
-			In his spare time, Andrew enjoys the Colorado Wilderness with backpacking,
-			climbing, mountaineering, skiing and photography. When the weather does not
-			cooperate he likes to hack on a Raspberry Pi.
-		\end{column}
-	\end{columns}
-\end{frame}
 
 {
 	\begin{frame}[plain]
@@ -64,38 +43,27 @@
 
 \begin{frame}[allowframebreaks,t]{Agenda}
 	\begin{itemize}
-		%\item Background
-			%\begin{itemize}
-				%\item OSI model
-				%\item TCP/IP
-				%\item DNS
-			%\end{itemize}
-		%\item General Overview
-			%\begin{itemize}
-				%\item Purpose
-				%\item The people behind these attacks
-				%\item Events in the news
-				%\item Short History ? % TODO
-			%\end{itemize}
-		%\item Tools used?
-			%\begin{itemize}
-				%\item Wireshark
-				%\item scapy
-				%\item dig
-				%\item Other built in Linux tools %TODO remove
-			%\end{itemize}
+		\item Background
+			\begin{itemize}
+				\item OSI model
+			\end{itemize}
 		\item{SYN Floods}
 		\item{DNS Reflection}
 		\item{r-u-dead-yet? (RUDY)}
 	\end{itemize}
 \end{frame}
 
-%\begin{frame}{OSI Model}
-	%% TODO
-%\end{frame}
+\begin{frame}{OSI Model}
+	\includegraphics[width=\textwidth]{images/osi2.png}
+\end{frame}
 
 \begin{frame}{SYN Flood}
 	%\includegraphics[width=1\textwidth]{images/flood.jpg}
+	\begin{center}
+		\vspace*{\fill}
+		{\Large SYN Flood}
+		\vspace*{\fill}
+	\end{center}
 \end{frame}
 
 \begin{frame}
@@ -158,9 +126,11 @@
 
 \begin{frame}
 	\frametitle{SYN Flood... Demo}
-	%- start up webserver on work laptop
-	%- fireup scapy to show a single packet creation
-	%- watch the result in wireshark
+	\begin{center}
+		\vspace*{\fill}
+		{\Large Demo}
+		\vspace*{\fill}
+	\end{center}
 \end{frame}
 
 \begin{frame}
@@ -185,6 +155,11 @@
 \end{frame}
 
 \begin{frame}{DNS Reflection Attacks}
+	\begin{center}
+		\vspace*{\fill}
+		{\Large DNS Reflection Attacks}
+		\vspace*{\fill}
+	\end{center}
 
 \end{frame}
 
@@ -196,18 +171,11 @@
 			\item DNS (Domain Name System) provides a mapping of names to IP addresses
 				%That way we can keep down on the number of mysql ip addresses we have to
 				%memorize :)
-			%\begin{verbatim}
 			\begin{semiverbatim}
 			www.google.com -> 74.125.227.112
 			\end{semiverbatim}
-			%\end{verbatim}
-			\item DNS has a hierarchal structure with authoritative nodes
-				%\begin{verbatim} TODO
-				%.
-				%edu, com, gov, ...
-				%mines      google   credera
-				%\end{verbatim}
-			\item Nodes can have several different types of records
+
+			\item DNS Servers / Nodes can have several different types of records
 				%for which they are authoritative
 				\begin{itemize}
 					\item {\ttfamily A} % The typical ip record
@@ -217,32 +185,13 @@
 						% ip 6
 					\item {\ttfamily TXT}	\dots
 				\end{itemize}
-		\end{itemize}
-	}
-	\only<2>{
-		\framesubtitle{How do you use it?}
-		\begin{itemize}
-			\item Clients / Resolvers interact with DNS servers with Queries
-				%Example dig output TODO explain what dig does /show some dig stuff
-				\begin{lstlisting}^^J
-				;; QUESTION SECTION:^^J
-				;www.google.com.			IN	A^^J
-^^J
-				;; ANSWER SECTION:^^J
-				www.google.com.		144	IN	A	74.125.227.208^^J
-				\end{lstlisting}
-				% TODO find a home for this
-			%\item Authoritative responses are from the original DNS 
-			%\item Caching may be employed at which point the authoritative bit will not
-				%be set.
-				%\begin{itemize}
-					%\item DNS caches are usually set up by the ISP
-						%%This reduces a lot of stress so that each person does not have to do a
-						%%iterative lookup
-				%\end{itemize}
+			\item DNS has a hierarchal structure with authoritative nodes
+			\item Clients / Resolvers iteratively query DNS servers
+				\begin{itemize}
+					\item A resolver seeking "www.google.com" starts at "root", then
+						"com", "google", \dots
+				\end{itemize}
 			\item Queries use UDP %\em{important}
-				%Important for the response aspect of the DNS reflection attack... fire and
-				%forget
 		\end{itemize}
 	}
 \end{frame}
@@ -276,64 +225,26 @@
 			\item To be authoritative, the domain must be in that DNS
 				server's zone
 			\item Normally DNS queries use an iterative approach
-				\begin{itemize}
-					\item Resolving www.google.com starts at root, then com, google, and
-						so on
-					\item Instead of pointing a query to the next domain, an open resolver
-						makes the recursive requests
-				\end{itemize}
+			\item Instead of pointing a query to the next domain, an open resolver
+				makes the recursive requests on behalf of the requester
 			%\item  It is okay for DNS servers to be recursive.  The caching servers setup by
 				%your ISP are recursive, but only for requests coming from their zone. 
 			%\item The problem lies when anyone can make a query to an open resolver
 		\end{itemize}
 	}
 \end{frame}
-%\end{frame}
-%\begin{frame}[fragile]
-	%\frametitle{DNS Reflection Attacks... Theory... Open Resolvers}
-	% DO IN DEMO?
+
 \begin{frame}
 	\frametitle{DNS Reflection Attacks... Demo}
+	\begin{center}
+		\vspace*{\fill}
+		{\Large Demo}
+		\vspace*{\fill}
+	\end{center}
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}
 	\frametitle{DNS Reflection Attacks... Open Resolvers}
-	\only<1>{
-		\framesubtitle{An example of a properly configured domain server}
-		\begin{lstlisting}[breaklines]^^J
-		; <<>> DiG 9.8.1-P1 <<>> @216.239.32.10 andrewdemaria.com^^J
-		; (1 server found)^^J
-		;; global options: +cmd^^J
-		;; Got answer:^^J
-		;; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 57548^^J
-		;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0^^J
-		;; WARNING: recursion requested but not available^^J
-^^J
-		;; QUESTION SECTION:^^J
-		;andrewdemaria.com.		IN	A^^J
-		\end{lstlisting}
-	}
-%\end{frame}
-%\begin{frame}[fragile]
-	%\frametitle{DNS Reflection Attacks... Theory... Open Resolvers}
-	\only<2>{
-		\framesubtitle{An example of a open resolver (very misconfigured)}
-		\begin{lstlisting}[breaklines]^^J
-		; <<>> DiG 9.8.1-P1 <<>> @213.128.1.147 google.com +time=3^^J
-		; (1 server found)^^J
-		;; global options: +cmd^^J
-		;; Got answer:^^J
-		;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 27001^^J
-		;; flags: qr rd ra; QUERY: 1, ANSWER: 11, AUTHORITY: 4, ADDITIONAL: 4^^J
-^^J
-		;; QUESTION SECTION:^^J
-		;google.com.			IN	A^^J
-^^J
-		;; ANSWER SECTION:^^J
-		google.com.		112	IN	A	173.194.113.192^^J
-		\end{lstlisting}
-	}
-	\only<3>{
 		\framesubtitle{So how bad is it?}
 		There are a little over 28 {\em million} open resolvers operating
 		today\footnote{ As reported by http://openresolverproject.org/breakdown.cgi on
@@ -343,7 +254,6 @@
 			\item Most businesses / organizations don't even realize that they are
 				contributing to the demise of the internet
 		\end{itemize}
-	}
 \end{frame}
 
 \begin{frame}
@@ -364,14 +274,8 @@
 	\end{itemize}
 \end{frame}
 
-
-%\begin{frame} % TODO
-	%\frametitle{DNS Reflection Attacks... In the news}
-%\end{frame}
-
 \begin{frame}
 	\frametitle{DNS Reflection Attacks... Mitigation}
-	% TODO
 	\begin{itemize}
 		\item Shutdown all the open resolvers
 			\pause
@@ -383,7 +287,6 @@
 			content and thwarting DNS Reflection attacks
 		%\item Web Application Firewalls will not save you here {\em that's not to
 			%say they are useless} 
-			% TODO
 	\end{itemize}
 \end{frame}
 
@@ -418,13 +321,6 @@
 			threads  (30 seconds for Apache)
 	\end{itemize}
 \end{frame}
-
-%\begin{frame} %TODO need more content here
-	%\frametitle{Other considerations}
-	%\begin{itemize}
-		%\item DOS attacks are commonly used as a distraction
-	%\end{itemize}
-%\end{frame}
 
 \begin{frame}
 	\frametitle{Questions?}
